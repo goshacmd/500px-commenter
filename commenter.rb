@@ -47,8 +47,10 @@ class Commenter
   # photos - The Array photo ids.
   def comment_random_and_like_on_set(photos)
     photos.each do |photo|
+      puts "Processing photo #{photo} (http://500px.com/photo/#{photo})"
       comment_on photo, random_text
       like_on photo
+      sleep [5, 10, 15, 20, 25, 30].sample
     end
   end
 end
