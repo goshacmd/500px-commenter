@@ -10,8 +10,9 @@ COMMENT_TEXTS = [
   'Awesome capture.',
   'Nice!',
   'Wow, excellent!',
-  'Awesome shot.'
-].map { |text| "#{text}\nPlease, find time to visit back." }
+  'Awesome shot.',
+  'Gorgeous!'
+]
 
 class Commenter
   # Public: Initializes the Commenter.
