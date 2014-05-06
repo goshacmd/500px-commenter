@@ -1,11 +1,15 @@
-require './auth'
+require 'oauth'
+require 'multi_json'
+
+require './five_hundred'
 require './commenter'
 
-access_token = get_access_token
+CONSUMER_KEY = ENV['CONSUMER_KEY']
+CONSUMER_SECRET = ENV['CONSUMER_SECRET']
+USERNAME = ENV['USERNAME']
+PASSWORD = ENV['PASSWORD']
 
-# Get fresh photo ids.
-fresh_photos = MultiJson.decode(access_token.get('/v1/photos.json').body)['photos']
-fresh_photo_ids = fresh_photos.map { |photo| photo['id'] }
+base = FiveHundred.new key: CONSUMER_KEY, secret: CONSUMER_SECRET, username: USERNAME, password: PASSWORD
 
-commenter = Commenter.new access_token
-commenter.comment_random_and_like_on_set fresh_photo_ids
+commenter = Commenter.new base
+commenter.perform
