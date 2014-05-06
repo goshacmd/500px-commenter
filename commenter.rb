@@ -92,20 +92,26 @@ class Commenter
   end
 
   def perform
-    comment_random_and_like_on_set('fresh_today')
-    comment_random_and_like_on_set('upcoming')
-    comment_random_and_like_on_set('popular')
+    comment_random_and_like_on_set('fresh_today', 'upcoming', 'popular')
   end
 
-  def comment_random_and_like_on_set(feature)
-    photos = base.photos(feature: feature, rpp: 30)
+  def comment_random_and_like_on_set(*features)
+    photos = features.map do |feature|
+      base.photos(feature: feature, rpp: 30)
+    end.inject(:concat)
 
-    photos.select { |p| should_process?(p) }.each do |photo|
+    selected = photos.select { |p| should_process?(p) }
+
+    puts "+ Starting to process #{selected.size} photos"
+
+    selected.each do |photo|
       process(photo)
       sl = (2..20).to_a.sample
       puts "  (sleeping #{sl})"
       sleep sl
     end
+
+    puts "- #{selected.size} photos processed"
   end
 
   def should_process?(photo)
