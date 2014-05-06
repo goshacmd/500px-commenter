@@ -51,19 +51,23 @@ class CommentTextGenerator
 end
 
 class Policy
-  attr_reader :dismiss_nsfw, :rating_threshold, :votes_threshold, :favorites_threshold
+  attr_reader :dismiss_nsfw, :rating_threshold, :votes_threshold,
+    :favorites_threshold, :exclude_user
 
   alias_method :dismiss_nsfw?, :dismiss_nsfw
 
-  def initialize(dismiss_nsfw: true, rating_threshold: 25, votes_threshold: 5, favorites_threshold: 1)
+  def initialize(dismiss_nsfw: true, rating_threshold: 25, votes_threshold: 5,
+                 favorites_threshold: 1, exclude_user: nil)
     @dismiss_nsfw = dismiss_nsfw
     @rating_threshold = rating_threshold
     @votes_threshold = votes_threshold
     @favorites_threshold = favorites_threshold
+    @exclude_user = exclude_user
   end
 
   def check(photo)
     return false if dismiss_nsfw? && photo.nsfw?
+    return false if exclude_user && photo.username == exclude_user
 
     photo.rating >= rating_threshold &&
       photo.votes_count >= votes_threshold &&
@@ -76,7 +80,11 @@ class Commenter
 
   def initialize(base)
     @base = base
-    @policy = Policy.new
+    @policy = Policy.new(exclude_user: username)
+  end
+
+  def username
+    base.username
   end
 
   def random_text(name, rating)
@@ -90,7 +98,7 @@ class Commenter
   end
 
   def comment_random_and_like_on_set(feature)
-    photos = base.photos(feature: feature, rpp: 75)
+    photos = base.photos(feature: feature, rpp: 30)
 
     photos.select { |p| should_process?(p) }.each do |photo|
       process(photo)

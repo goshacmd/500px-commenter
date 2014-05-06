@@ -1,13 +1,25 @@
 class FiveHundred
+  USER_ATTRS = %w(id username firstname lastname fullname)
   PHOTO_ATTRS = %w(id name rating category times_viewed votes_count favorites_count nsfw liked)
 
-  class Photo < Struct.new(:base, *PHOTO_ATTRS, :user_firstname)
+  class User < Struct.new(:base, *USER_ATTRS)
+  end
+
+  class Photo < Struct.new(:base, *PHOTO_ATTRS, :user)
     def like
       base.like(id)
     end
 
     def comment(text)
       base.comment(id, text)
+    end
+
+    def user_firstname
+      user.firstname
+    end
+
+    def username
+      user.username
     end
 
     def web_page
@@ -57,8 +69,10 @@ class FiveHundred
     body = MultiJson.decode(result.body)['photos']
 
     body.map do |photo|
-      attrs = photo.values_at(*PHOTO_ATTRS)
-      Photo.new(self, *attrs, photo['user']['firstname'])
+      user_attrs = photo.delete('user').values_at(*USER_ATTRS)
+      user = User.new(self, *user_attrs)
+      photo_attrs = photo.values_at(*PHOTO_ATTRS)
+      Photo.new(self, *photo_attrs, user)
     end
   end
 
