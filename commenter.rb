@@ -92,15 +92,34 @@ class Commenter
   end
 
   def perform
-    comment_random_and_like_on_set('fresh_today', 'upcoming', 'popular')
+    timing do
+      comment_random_and_like_on_set('fresh_today', 'upcoming', 'popular')
+    end
   end
 
-  def comment_random_and_like_on_set(*features)
+  def timing(&block)
+    now = Time.now
+
+    puts "^ Started #{now}"
+
+    block.call
+
+    thn = Time.now
+    diff = (thn - now).to_i
+
+    puts "^ Finished #{thn}. Processing took #{diff}s = #{diff/60}min"
+  end
+
+  def select_photos(*features)
     photos = features.map do |feature|
       base.photos(feature: feature, rpp: 30)
     end.inject(:concat)
 
-    selected = photos.select { |p| should_process?(p) }
+    photos.select { |p| should_process?(p) }
+  end
+
+  def comment_random_and_like_on_set(*features)
+    selected = select_photos(*features)
 
     puts "+ Starting to process #{selected.size} photos"
 
@@ -125,7 +144,5 @@ class Commenter
 
     photo.comment random_text(photo.user_firstname, photo.rating)
     photo.like
-
-    puts "-- Done"
   end
 end
