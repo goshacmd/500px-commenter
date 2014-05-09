@@ -1,53 +1,33 @@
 class CommentTextGenerator
-  COMMENT_TEXTS = [
-    [10, "great shot"],
-    [10, "I like it"],
-    [10, "nice"],
-    [10, "it's good"],
-    [15, "great"],
-    [15, "great tones"],
-    [20, "nice colors"],
-    [20, "no doubt, cool photo"],
-    [20, "excellent work"],
-    [25, "awesome capture"],
-    [30, "really cool"],
-    [30, "good job"],
-    [35, "wow, excellent"],
-    [35, "what a beautiful shot"],
-    [40, "awesome shot"],
-    [40, "lovely"],
-    [40, "sweet"],
-    [40, "perfect"],
-    [45, "marvellous frame"],
-    [45, "that's stunning"],
-    [45, "exciting. Your work is neat"],
-    [45, "whoa, that's terrific"],
-    [50, "gorgeous"],
-    [55, "superb photo"],
-    [60, "oh my! It's totally amazing"],
-    [80, "totally stunning"],
-    [80, "impressive capture"],
-    [90, "unbelievably incredible"],
-  ]
+  class << self
+    attr_accessor :texts
 
-  def self.random_text(name, rating)
-    available_phrases = COMMENT_TEXTS.select do |(threshold, _)|
-      rating >= threshold
+    def random_text(name, rating)
+      available_phrases = texts.select do |(threshold, _)|
+        rating >= threshold
+      end
+
+      _, phrase = available_phrases.sample
+      return unless phrase
+
+      sign = rand > 0.5 ? '!' : '.'
+
+      if name && name != '' && rand > 0.33
+        name = name.strip
+        parts = rand > 0.5 ? [name, phrase] : [phrase.capitalize, name]
+      else
+        parts = [phrase.capitalize]
+      end
+
+      "#{parts.join(', ')}#{sign}"
     end
 
-    _, phrase = available_phrases.sample
-    return unless phrase
-
-    sign = rand > 0.5 ? '!' : '.'
-
-    if name && name != '' && rand > 0.33
-      name = name.strip
-      parts = rand > 0.5 ? [name, phrase] : [phrase.capitalize, name]
-    else
-      parts = [phrase.capitalize]
+    def read_texts(file_path)
+      self.texts = File.readlines(file_path).map do |line|
+        th, _, txt = line.partition(' ')
+        [th.to_i, txt.strip]
+      end
     end
-
-    "#{parts.join(', ')}#{sign}"
   end
 end
 
@@ -57,8 +37,8 @@ class Policy
 
   alias_method :dismiss_nsfw?, :dismiss_nsfw
 
-  def initialize(dismiss_nsfw: true, rating_threshold: 25, votes_threshold: 5,
-                 favorites_threshold: 1, exclude_user: nil)
+  def initialize(dismiss_nsfw: false, rating_threshold: 0, votes_threshold: 0,
+                 favorites_threshold: 0, exclude_user: nil)
     @dismiss_nsfw = dismiss_nsfw
     @rating_threshold = rating_threshold
     @votes_threshold = votes_threshold
@@ -79,22 +59,74 @@ end
 class Commenter
   attr_reader :base, :policy
 
-  def initialize(base)
+  def initialize(base, policy = Polciy.new)
     @base = base
-    @policy = Policy.new(exclude_user: username)
-  end
-
-  def username
-    base.username
+    @policy = policy
   end
 
   def random_text(name, rating)
     CommentTextGenerator.random_text(name, rating)
   end
 
+  def select_photos(features, count: 30)
+    photos = features.map do |feature|
+      base.photos(feature: feature, rpp: count)
+    end.inject(:concat).uniq
+
+    photos.select { |p| should_process?(p) }
+  end
+
+  def comment(features, options = {}, &block)
+    selected = select_photos(features, options)
+
+    selected.each do |photo|
+      yield :started, photo
+      process(photo)
+      yield :finished, photo
+    end
+  end
+
+  def should_process?(photo)
+    return if photo.liked?
+
+    policy.check(photo)
+  end
+
+  def process(photo)
+    photo.comment random_text(photo.user_firstname, photo.rating)
+    photo.like
+  end
+end
+
+class CommentAction
+  attr_reader :commenter, :features, :photo_count, :sleep_range
+
+  def self.perform(options = {})
+    new(options).perform
+  end
+
+  def initialize(options = {})
+    base = FiveHundred.new(options[:five_hundred])
+    policy = Policy.new(options[:policy])
+    @commenter = Commenter.new(base, policy)
+    @features = options[:features] || ['fresh_today']
+    @photo_count = options[:photo_count] || 25
+    @sleep_range = options[:sleep] || (2..20)
+  end
+
   def perform
     timing do
-      comment_random_and_like_on_set('fresh_today', 'upcoming', 'popular')
+      processed = commenter.comment features, count: photo_count do |c, photo|
+        if c == :started
+          puts "++ Processing photo #{photo.web_page} #{photo.info}"
+        else
+          sl = sleep_range.to_a.sample
+          puts "  (sleeping #{sl})"
+          sleep sl
+        end
+      end
+
+      puts "+ Processed #{processed.size} photos"
     end
   end
 
@@ -109,41 +141,5 @@ class Commenter
     diff = (thn - now).to_i
 
     puts "^ Finished #{thn}. Processing took #{diff}s = #{diff/60}min"
-  end
-
-  def select_photos(*features)
-    photos = features.map do |feature|
-      base.photos(feature: feature, rpp: 30)
-    end.inject(:concat)
-
-    photos.select { |p| should_process?(p) }
-  end
-
-  def comment_random_and_like_on_set(*features)
-    selected = select_photos(*features)
-
-    puts "+ Starting to process #{selected.size} photos"
-
-    selected.each do |photo|
-      process(photo)
-      sl = (2..20).to_a.sample
-      puts "  (sleeping #{sl})"
-      sleep sl
-    end
-
-    puts "- #{selected.size} photos processed"
-  end
-
-  def should_process?(photo)
-    return if photo.liked?
-
-    policy.check(photo)
-  end
-
-  def process(photo)
-    puts "++ Processing photo #{photo.id} #{photo.info} #{photo.web_page}"
-
-    photo.comment random_text(photo.user_firstname, photo.rating)
-    photo.like
   end
 end
