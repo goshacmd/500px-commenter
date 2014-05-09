@@ -41,6 +41,7 @@ class CommentTextGenerator
     sign = rand > 0.5 ? '!' : '.'
 
     if name && name != '' && rand > 0.33
+      name = name.strip
       parts = rand > 0.5 ? [name, phrase] : [phrase.capitalize, name]
     else
       parts = [phrase.capitalize]
