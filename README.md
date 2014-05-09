@@ -1,11 +1,14 @@
 # 500px comment poster
 
-Posts comments and likes on "fresh today" photos from your name.
-(Primarily used to enlarge "affection".)
+Likes and comments photos from fresh today, upcoming, and popular
+sections. The text of comment depends on the rating of the photo and
+most comments are personalized to refer to the author bu their name.
+(Primary use is to make your "affection" bigger.)
 
 ### Requirements
 
-* Ruby 1.9
+* Ruby 1.9+
+* Bundler
 
 ### Required configuration
 
@@ -30,8 +33,7 @@ commenting to be triggered once a hour/day/etc.
 
 First, add env vars to heroku:
 
-    heroku config:add CONSUMER_KEY=consumer_key
-CONSUMER_SECRET=consumer_secret USERNAME=username PASSWORD=password
+    heroku config:add CONSUMER_KEY=consumer_key CONSUMER_SECRET=consumer_secret USERNAME=username PASSWORD=password
 
 Then, setup a scheduled task: add "Scheduler" heroku addon for the app,
 and create a job with task being `rake` and needed requency.
