@@ -1,18 +1,15 @@
 class CommentTextGenerator
   class << self
-    attr_accessor :data
+    attr_accessor :data, :probabilities
 
     def probability(thing)
-      case thing
-      when :name
-        0.66
-      when :trash
-        0.25
-      when :noun
-        0.75
-      when :sign
-        0.9
-      end
+      {
+        name: 0.66,
+        trash: 0.25,
+        noun: 0.75,
+        sign: 0.9,
+        name_in_the_end: 0.5
+      }.merge(probabilities || {})[thing]
     end
 
     def probable?(thing)
@@ -48,8 +45,8 @@ class CommentTextGenerator
       scheme << :adjective
       scheme << :noun if probable?(:noun)
 
-      if name && probable?(:name)
-        rand > 0.5 ? scheme.unshift(:name) : scheme.push(:name)
+      if name && probable?(:name) && pos = probable?(:name_in_the_end)
+        pos ? scheme.push(:name) : scheme.unshift(:name)
       end
 
       scheme << :sign if probable?(:sign)

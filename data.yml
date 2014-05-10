@@ -15,6 +15,7 @@ adjective:
   - 55 wonderful
   - 55 gorgeous
   - 55 superb
+  - 60 fantastic
   - 60 amazing
   - 75 fabulous
   - 75 impressive
@@ -28,6 +29,9 @@ noun:
   - work
   - tones
   - colors
+  - composition
+  - moment
+  - scene
 
 trash:
   - it's (a)
