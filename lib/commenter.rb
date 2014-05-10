@@ -7,8 +7,8 @@ class Commenter
     @generator = generator
   end
 
-  def random_text(name, rating)
-    generator.random_text(name: name, rating: rating)
+  def random_text(photo)
+    generator.random_text(photo)
   end
 
   def select_photos(features, count: 30)
@@ -36,7 +36,7 @@ class Commenter
   end
 
   def process(photo)
-    text = random_text(photo.user_firstname, photo.rating)
+    text = random_text(photo)
 
     photo.comment text
     photo.like

@@ -30,7 +30,10 @@ class CommentTextGenerator
       self.data = data
     end
 
-    def random_text(rating: 20, name: nil)
+    def random_text(photo)
+      rating = photo.rating
+      name = photo.user_firstname
+
       scheme = random_scheme(name)
       prefill = prefill_scheme(scheme, rating: rating, name: name)
       transformed = transform_prefill(prefill)
