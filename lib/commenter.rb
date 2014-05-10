@@ -24,8 +24,8 @@ class Commenter
 
     selected.each do |photo|
       yield :started, photo
-      process(photo)
-      yield :finished, photo
+      ret = process(photo)
+      yield :finished, photo, ret
     end
   end
 
@@ -36,7 +36,11 @@ class Commenter
   end
 
   def process(photo)
-    photo.comment random_text(photo.user_firstname, photo.rating)
+    text = random_text(photo.user_firstname, photo.rating)
+
+    photo.comment text
     photo.like
+
+    text
   end
 end

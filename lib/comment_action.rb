@@ -16,10 +16,12 @@ class CommentAction
 
   def perform
     timing do
-      processed = commenter.comment features, count: photo_count do |c, photo|
+      processed = commenter.comment features, count: photo_count do |c, photo, ret|
         if c == :started
           puts "++ Processing photo #{photo.web_page} #{photo.info}"
         else
+          puts "-- Done: #{ret}"
+
           sl = sleep_range.to_a.sample
           puts "  (sleeping #{sl})"
           sleep sl
