@@ -1,5 +1,6 @@
 require 'oauth'
 require 'multi_json'
+require 'unidecoder'
 
 require './five_hundred'
 require './commenter'
