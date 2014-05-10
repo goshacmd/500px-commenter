@@ -2,6 +2,7 @@ require 'oauth'
 require 'multi_json'
 require 'unidecoder'
 require 'yaml'
+require 'virtus'
 
 [:five_hundred, :comment_text_generator, :policy, :commenter, :comment_action].each do |f|
   require "./lib/#{f}"

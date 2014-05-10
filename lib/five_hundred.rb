@@ -1,11 +1,38 @@
 class FiveHundred
-  USER_ATTRS = %w(id username firstname lastname fullname)
-  PHOTO_ATTRS = %w(id name rating category times_viewed votes_count favorites_count nsfw liked)
+  class User
+    include Virtus.model
 
-  class User < Struct.new(:base, *USER_ATTRS)
+    attribute :id, Integer
+    attribute :username, String
+    attribute :firstname, String
+    attribute :lastname, String
+    attribute :fullname, String
+    attribute :affection, Integer
+    attribute :photos_count, Integer
   end
 
-  class Photo < Struct.new(:base, *PHOTO_ATTRS, :user)
+  class Photo
+    include Virtus.model
+
+    attr_reader :base
+
+    def initialize(base, attrs)
+      @base = base
+      super(attrs)
+    end
+
+    attribute :id, Integer
+    attribute :name, String
+    attribute :rating, Float
+    attribute :category, Integer
+    attribute :times_viewed, Integer
+    attribute :votes_count, Integer
+    attribute :favorites_count, Integer
+    attribute :nsfw, Boolean
+    attribute :liked, Boolean
+
+    attribute :user, User
+
     def like
       base.like(id)
     end
@@ -63,17 +90,22 @@ class FiveHundred
     consumer.get_access_token request_token, {}, { x_auth_mode: 'client_auth', x_auth_username: username, x_auth_password: password }
   end
 
-  def photos(feature: 'fresh_today', rpp: 20)
-    result = access_token.get("/photos.json?include_states=1&feature=#{feature}&rpp=#{rpp}")
+  def photos(feature: 'fresh_today', rpp: 20, full_user: false)
+    result = get("/photos.json?include_states=1&feature=#{feature}&rpp=#{rpp}")
 
-    body = MultiJson.decode(result.body)['photos']
+    body = result['photos']
 
     body.map do |photo|
-      user_attrs = photo.delete('user').values_at(*USER_ATTRS)
-      user = User.new(self, *user_attrs)
-      photo_attrs = photo.values_at(*PHOTO_ATTRS)
-      Photo.new(self, *photo_attrs, user)
+      if full_user
+        photo[:user] = user_attrs(photo['user']['username'])
+      end
+
+      Photo.new(self, photo)
     end
+  end
+
+  def user_attrs(username)
+    get("/users/show?username=#{username}")['user']
   end
 
   def comment(photo_id, text)
@@ -82,5 +114,10 @@ class FiveHundred
 
   def like(photo_id)
     access_token.post("/photos/#{photo_id}/vote", vote: 1)
+  end
+
+  def get(url)
+    result = access_token.get(url)
+    MultiJson.decode(result.body)
   end
 end
