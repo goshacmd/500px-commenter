@@ -1,13 +1,14 @@
 class Commenter
-  attr_reader :base, :policy
+  attr_reader :base, :policy, :generator
 
-  def initialize(base, policy = Polciy.new)
+  def initialize(base, policy = Polciy.new, generator = CommentTextGenerator)
     @base = base
     @policy = policy
+    @generator = generator
   end
 
   def random_text(name, rating)
-    CommentTextGenerator.random_text(name, rating)
+    generator.random_text(name: name, rating: rating)
   end
 
   def select_photos(features, count: 30)

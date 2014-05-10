@@ -1,0 +1,38 @@
+adjective:
+  - 0 nice
+  - 10 great
+  - 10 good
+  - 15 cool
+  - 20 excellent
+  - 20 sweet
+  - 25 awesome
+  - 25 lovely
+  - 35 perfect
+  - 40 marvellous
+  - 40 exciting
+  - 45 stunning
+  - 50 terrific
+  - 55 gorgeous
+  - 55 superb
+  - 60 amazing
+  - 75 fabulous
+  - 75 impressive
+  - 90 incredible
+
+noun:
+  - shot
+  - photo
+  - capture
+  - frame
+  - work
+  - tones
+  - colors
+
+trash:
+  - it's (a)
+  - that's (a)
+  - wow,
+
+sign:
+  - .
+  - "!"

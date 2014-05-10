@@ -12,7 +12,7 @@ CONSUMER_SECRET = ENV['CONSUMER_SECRET']
 USERNAME = ENV['USERNAME']
 PASSWORD = ENV['PASSWORD']
 
-CommentTextGenerator.read_texts 'texts.txt'
+CommentTextGenerator.read_data 'data.yml'
 
 CommentAction.perform \
   five_hundred: {
