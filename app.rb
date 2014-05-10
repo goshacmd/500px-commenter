@@ -1,9 +1,11 @@
 require 'oauth'
 require 'multi_json'
 require 'unidecoder'
+require 'yaml'
 
-require './five_hundred'
-require './commenter'
+[:five_hundred, :comment_text_generator, :policy, :commenter, :comment_action].each do |f|
+  require "./lib/#{f}"
+end
 
 CONSUMER_KEY = ENV['CONSUMER_KEY']
 CONSUMER_SECRET = ENV['CONSUMER_SECRET']

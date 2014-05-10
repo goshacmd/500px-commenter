@@ -7,7 +7,7 @@ most comments are personalized to refer to the author bu their name.
 
 ### Requirements
 
-* Ruby 1.9+
+* Ruby 2.1+
 * Bundler
 
 ### Required configuration
