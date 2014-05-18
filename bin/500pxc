@@ -1,21 +1,17 @@
-require 'oauth'
-require 'multi_json'
-require 'unidecoder'
-require 'yaml'
-require 'virtus'
+#!/usr/bin/env ruby
 
-[:five_hundred, :comment_text_generator, :policy, :commenter, :comment_action].each do |f|
-  require "./lib/#{f}"
-end
+$:.unshift File.expand_path('../lib', File.dirname(__FILE__))
+
+require 'fh_commenter'
 
 CONSUMER_KEY = ENV['CONSUMER_KEY']
 CONSUMER_SECRET = ENV['CONSUMER_SECRET']
 USERNAME = ENV['USERNAME']
 PASSWORD = ENV['PASSWORD']
 
-CommentTextGenerator.read_data 'data.yml'
+FHCommenter::CommentTextGenerator.read_data File.expand_path('../data.yml', File.dirname(__FILE__))
 
-CommentAction.perform \
+FHCommenter::CommentAction.perform \
   five_hundred: {
     key: CONSUMER_KEY, secret: CONSUMER_SECRET,
     username: USERNAME, password: PASSWORD

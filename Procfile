@@ -1,1 +1,1 @@
-worker: ruby app.rb
+worker: bin/500pxc
