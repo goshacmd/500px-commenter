@@ -4,16 +4,16 @@ $:.unshift File.expand_path('../lib', File.dirname(__FILE__))
 
 require 'fh_commenter'
 
-CONSUMER_KEY = ENV['CONSUMER_KEY']
-CONSUMER_SECRET = ENV['CONSUMER_SECRET']
-USERNAME = ENV['USERNAME']
-PASSWORD = ENV['PASSWORD']
+KEY = ENV['500PX_CONSUMER_KEY']
+SECRET = ENV['500PX_CONSUMER_SECRET']
+USERNAME = ENV['500PX_USERNAME']
+PASSWORD = ENV['500PX_PASSWORD']
 
 FHCommenter::CommentTextGenerator.read_data File.expand_path('../data.yml', File.dirname(__FILE__))
 
 FHCommenter::CommentAction.perform \
   five_hundred: {
-    key: CONSUMER_KEY, secret: CONSUMER_SECRET,
+    key: KEY, secret: SECRET,
     username: USERNAME, password: PASSWORD
   },
   features: ['fresh_today', 'upcoming', 'popular'],
